@@ -4,6 +4,7 @@
 #     updated for legend = topleft March 17 2026
 # Some rgp2.R parameters have been adjusted from the original rgp2 code to 
 #  enhance plots used in the WSC 2026 RGP tutorial by Barton.
+# Legend updated June 27, 2026.
 # Given d and a function of x in R^d, construct a response-scaled design
 #  plot on a factorial grid with number of levels nlev[1] ... nlev[d] and 
 #  x limits xlo[1] ... xlo[d] and xhi[1] ... xhi[d]
@@ -416,6 +417,8 @@ outer <- function(unscaledDOE,outerd,innerd){
   if(outerd == 3){text(max(c(x0,x1))+.15*epsx,+min(c(y0,y1))+.65*epsy,plotnames[3],srt=90,cex=tscale)}
   # set legend text using colnames
   legtext = NULL
+  # make large disk larger
+  legend_sizes = c(rep(1,d+1),2)
   for (ivar in 1:d){
     legtext[ivar] = paste(plotnames[ivar]," = ",colnames(DOE)[ivar])
   }
@@ -424,15 +427,15 @@ outer <- function(unscaledDOE,outerd,innerd){
   if(outerd==1){
     legend("left",title = "Key", legend=legtext, 
            col=c(rep("white",d),rep("grey30",2)), pch=c(rep(19,d),20,19), 
-           box.col="white",cex=.9)
+           pt.cex = legend_sizes,box.col="white",cex=.9)
   }else if(outerd==2){
     legend("left",title = "Key", legend=legtext, 
            col=c(rep("white",d),rep("grey30",2)), pch=c(rep(19,d),20,19), 
-           box.col="white",cex=.9)
+           pt.cex = legend_sizes,box.col="white",cex=.9)
     }else{ # outerd==3
     legend("left", title = "Key", inset=c(0,0), legend=legtext, 
            col=c(rep("white",d),rep("grey30",2)), pch=c(rep(19,d),20,19),
-           box.col="white",cex=.9)
+           pt.cex = legend_sizes,box.col="white",cex=.9)
   }
     # add inner subplots
     
