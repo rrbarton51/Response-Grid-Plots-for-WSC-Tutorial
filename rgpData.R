@@ -1,5 +1,6 @@
 # rgpData.R
 # by Russell R. Barton, March 17 2026
+#    updated to compute mean value of replicated DOE points July 20 2026
 #
 # Given a csv file with a full or partial grid of x in R^d. y in R^1, 
 #  identify nlev[1] ... nlev[d], x limits xlo[1] ... xlo[d] and xhi[1] ... xhi[d]
@@ -15,15 +16,22 @@ dataname = "TestData.csv"
 fname = "Test Data"
 rgpData <- function(dataname,fname){
   # first, read DOE and response spreadsheet
-  DOEdata = as.data.frame(read.csv(dataname, header = TRUE))
-  d = ncol(DOEdata)-1
-  xlo = as.vector(apply(DOEdata[,1:d],2,min))
-  xhi = as.vector(apply(DOEdata[,1:d],2,max))
+  DOEdata1 = as.data.frame(read.csv(dataname, header = TRUE))
+  d = ncol(DOEdata1)-1
+  xlo = as.vector(apply(DOEdata1[,1:d],2,min))
+  xhi = as.vector(apply(DOEdata1[,1:d],2,max))
   # number of different values detected for each x
-  nlev =  unlist(lapply(lapply(DOEdata[,1:d],unique),length))
+  nlev =  unlist(lapply(lapply(DOEdata1[,1:d],unique),length))
   # to check code compare d with length(nlev)
-  xlab = colnames(DOEdata[,1:d])
-  ylab <<- colnames(DOEdata)[d+1] # since not passed in call, must make global
+  xlab = colnames(DOEdata1[,1:d])
+  ylab <<- colnames(DOEdata1[d+1]) # since not passed in call, must make global
+  # replace duplicate rows with mean value
+  xlab = colnames(DOEdata1[1:d])
+  x_string = paste(xlab, collapse = " + ")
+  form_string = paste(ylab, "~", x_string)
+  agg_formula = as.formula(form_string)
+  DOEdata = aggregate(agg_formula,
+                      data = DOEdata1, FUN = mean)
   fdata = DOEdata[,(d+1)]
 
   
@@ -440,26 +448,28 @@ outer <- function(unscaledDOE,outerd,innerd){
   if(outerd == 3){text(max(c(x0,x1))+.15*epsx,+min(c(y0,y1))+.65*epsy,plotnames[3],srt=90,cex=tscale)}
   # set legend text using colnames
   legtext = NULL
+  # make large disk larger
+  legend_sizes = c(rep(1,d+1),2.5)
   for (ivar in 1:d){
     legtext[ivar] = paste(plotnames[ivar]," = ",colnames(DOE)[ivar])
   }
-    legtext[d+1] = paste("min",ylab,"=",signif(minresp,digits=3))
-    legtext[d+2] = paste("max",ylab,"=",signif(maxresp,digits=3))
+  legtext[d+1] = paste("min",ylab,"=",signif(minresp,digits=3))
+  legtext[d+2] = paste("max",ylab,"=",signif(maxresp,digits=3))
   if(outerd==1){
     #legend(x=-1.2*pscale,y=.7*pscale,title = "Key", legend=legtext,
-    legend("topleft",title = "Key", legend=legtext,
+    legend("left",title = "Key", legend=legtext,
            col=c(rep("white",d),rep("grey30",2)), pch=c(rep(19,d),20,19), 
-           box.col="white",cex=.8)
+           pt.cex = legend_sizes,box.col="white",cex=.9)
   }else if(outerd==2){
     #legend(x=-2*pscale,y=.5*pscale,title = "Key", legend=legtext,
-    legend("topleft",title = "Key", legend=legtext,
+    legend("left",title = "Key", legend=legtext,
            col=c(rep("white",d),rep("grey30",2)), pch=c(rep(19,d),20,19), 
-           box.col="white",cex=.8)
-    }else{ # outerd==3
+           pt.cex = legend_sizes,box.col="white",cex=.9)
+  }else{ # outerd==3
     #legend(x=-1.8*pscale,y=2.6*pscale, title = "Key", inset=c(0,0), legend=legtext, 
-    legend("topleft", title = "Key", inset=c(0,0), legend=legtext, 
+    legend("left", title = "Key", inset=c(0,0), legend=legtext, 
            col=c(rep("white",d),rep("grey30",2)), pch=c(rep(19,d),20,19),
-           box.col="white",cex=.8)
+           pt.cex = legend_sizes,box.col="white",cex=.9)
   }
     # add inner subplots
     
@@ -642,12 +652,12 @@ inner <- function(innerDOE,outerd,innerd,ploc,spscale,rscale,cgray){
     text(((min(x0)+max(x0))/2)-.05*epsx,min(y0)-.3*epsy,plotnames[outerd+1],cex=1.5*tscale)
   }
   if(innerd == 2){
-    text(max(x1)+.2*epsx,+min(y0)+.5*epsy,plotnames[outerd+2],srt=90,cex=1.5*tscale)
+    text(max(x1)+.3*epsx,+min(y0)+.5*epsy,plotnames[outerd+2],srt=90,cex=1.5*tscale)
   }
   if(innerd == 3){
-    text(min(x0)+.28*epsx,min(y0)-.2*epsy,plotnames[outerd+1],cex=1.2*tscale)
-    text(max(x1)-.1*epsx,min(y0)-.035*epsy,plotnames[outerd+2],srt=40,cex=1.2*tscale)
-    text(max(x1)+.17*epsx,+min(y0)+.6*epsy,plotnames[outerd+3],srt=90,cex=1.2*tscale)
+    text(min(x0)+.28*epsx,min(y0)-.2*epsy,plotnames[outerd+1],cex=tscale)
+    text(max(x1)-.05*epsx,min(y0)-.035*epsy,plotnames[outerd+2],srt=40,cex=tscale)
+    text(max(x1)+.2*epsx,+min(y0)+.6*epsy,plotnames[outerd+3],srt=90,cex=tscale)
   }
   
 }
